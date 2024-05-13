@@ -68,8 +68,20 @@ fn format_bytes(data: Format_Bytes_Data, comptime fmt: []const u8, options: std.
 }
 
 pub fn fmtBytes(bytes: u64) std.fmt.Formatter(format_bytes) {
-    const data = Format_Bytes_Data{ .bytes = bytes };
-    return .{ .data = data };
+    return .{
+        .data = .{
+            .bytes = bytes,
+        },
+    };
+}
+
+pub fn fmtBytesSigned(bytes: i64) std.fmt.Formatter(format_bytes) {
+    return .{
+        .data = .{
+            .bytes = @abs(bytes),
+            .negative = bytes < 0,
+        },
+    };
 }
 
 test fmtBytes {
