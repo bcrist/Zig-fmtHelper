@@ -1,10 +1,10 @@
 pub fn build(b: *std.Build) void {
     _ = b.addModule("fmt", .{
-        .root_source_file = .{ .path = "fmt.zig" },
+        .root_source_file = b.path("fmt.zig"),
     });
 
     const tests = b.addTest(.{
-        .root_source_file = .{ .path = "fmt.zig" },
+        .root_source_file = b.path("fmt.zig"),
         .target = b.standardTargetOptions(.{}),
         .optimize = b.standardOptimizeOption(.{}),
     });
