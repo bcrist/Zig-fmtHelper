@@ -381,24 +381,24 @@ fn Format_SI_Int(comptime T: type, comptime si_options: Format_SI_Int_Options) t
 
 fn Format_SI_Formatter(comptime T: type, comptime unit: []const u8) type {
     return switch (@typeInfo(T)) {
-        .Float, .ComptimeFloat => std.fmt.Formatter(format_si_float),
-        .Int => Format_SI_Int(T, .{ .unit = unit }).Formatter,
-        .ComptimeInt => Format_SI_Int(i64, .{ .unit = unit }).Formatter,
+        .float, .comptime_float => std.fmt.Formatter(format_si_float),
+        .int => Format_SI_Int(T, .{ .unit = unit }).Formatter,
+        .comptime_int => Format_SI_Int(i64, .{ .unit = unit }).Formatter,
         else => @compileError("Expected float or int value"),
     };
 }
 
 pub fn fmtSI(value: anytype, comptime unit: []const u8) Format_SI_Formatter(@TypeOf(value), unit) {
     switch (@typeInfo(@TypeOf(value))) {
-        .Float, .ComptimeFloat => {
+        .float, .comptime_float => {
             const data = Format_SI_Float_Data{ .value = value, .unit = unit };
             return .{ .data = data };
         },
-        .Int => {
+        .int => {
             const data = Format_SI_Int(@TypeOf(value), .{ .unit = unit }) { .value = value };
             return .{ .data = data };
         },
-        .ComptimeInt => {
+        .comptime_int => {
             const data = Format_SI_Int(i64, .{ .unit = unit }) { .value = @intCast(value) };
             return .{ .data = data };
         },
