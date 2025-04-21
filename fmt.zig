@@ -67,24 +67,24 @@ fn format_bytes(data: Format_Bytes_Data, comptime fmt: []const u8, options: std.
     return std.fmt.formatBuf(out, options, writer);
 }
 
-pub fn fmtBytes(bytes: u64) std.fmt.Formatter(format_bytes) {
+pub fn bytes(n: u64) std.fmt.Formatter(format_bytes) {
     return .{
         .data = .{
-            .bytes = bytes,
+            .bytes = n,
         },
     };
 }
 
-pub fn fmtBytesSigned(bytes: i64) std.fmt.Formatter(format_bytes) {
+pub fn bytes_signed(n: i64) std.fmt.Formatter(format_bytes) {
     return .{
         .data = .{
-            .bytes = @abs(bytes),
-            .negative = bytes < 0,
+            .bytes = @abs(n),
+            .negative = n < 0,
         },
     };
 }
 
-test fmtBytes {
+test bytes {
     var buf: [24]u8 = undefined;
     inline for (.{
         .{ .fmt = "{d}", .s = "0 B", .b = 0 },
@@ -109,7 +109,7 @@ test fmtBytes {
         .{ .fmt = "{d:=<10}", .s = "1 B=======", .b = 1 },
         .{ .fmt = "{d:^10}",  .s = "  100 KB  ", .b = 102400 },
     }) |tc| {
-        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{ fmtBytes(tc.b) });
+        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{ bytes(tc.b) });
         try std.testing.expectEqualStrings(tc.s, slice);
     }
 }
@@ -171,12 +171,12 @@ fn format_bytes_floor(data: Format_Bytes_Floor_Data, comptime fmt: []const u8, o
 }
 
 /// Like fmtBytes, but always truncates towards zero instead of rounding, and avoids floating point computation entirely.
-pub fn fmtBytesFloor(bytes: u64) std.fmt.Formatter(format_bytes_floor) {
-    const data = Format_Bytes_Floor_Data{ .bytes = bytes };
+pub fn bytes_floor(n: u64) std.fmt.Formatter(format_bytes_floor) {
+    const data = Format_Bytes_Floor_Data{ .bytes = n };
     return .{ .data = data };
 }
 
-test fmtBytesFloor {
+test bytes_floor {
     var buf: [24]u8 = undefined;
     inline for (.{
         .{ .fmt = "{d}", .s = "0 B", .b = 0 },
@@ -198,7 +198,7 @@ test fmtBytesFloor {
         .{ .fmt = "{d:=<10}", .s = "1 B=======", .b = 1 },
         .{ .fmt = "{d:^10}",  .s = "  100 KB  ", .b = 102400 },
     }) |tc| {
-        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{ fmtBytesFloor(tc.b) });
+        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{ bytes_floor(tc.b) });
         try std.testing.expectEqualStrings(tc.s, slice);
     }
 }
@@ -388,7 +388,7 @@ fn Format_SI_Formatter(comptime T: type, comptime unit: []const u8) type {
     };
 }
 
-pub fn fmtSI(value: anytype, comptime unit: []const u8) Format_SI_Formatter(@TypeOf(value), unit) {
+pub fn si(value: anytype, comptime unit: []const u8) Format_SI_Formatter(@TypeOf(value), unit) {
     switch (@typeInfo(@TypeOf(value))) {
         .float, .comptime_float => {
             const data = Format_SI_Float_Data{ .value = value, .unit = unit };
@@ -408,22 +408,22 @@ pub fn fmtSI(value: anytype, comptime unit: []const u8) Format_SI_Formatter(@Typ
 
 
 /// N.B this is mainly useful for small floating point durations; consider using std.fmt.fmtDuration for longer periods
-pub inline fn fmtSeconds(value: anytype) Format_SI_Formatter(@TypeOf(value), "s") { return fmtSI(value, "s"); }
-pub inline fn fmtGrams(value: anytype) Format_SI_Formatter(@TypeOf(value), "g") { return fmtSI(value, "g"); }
-pub inline fn fmtMeters(value: anytype) Format_SI_Formatter(@TypeOf(value), "m") { return fmtSI(value, "m"); }
-pub inline fn fmtLiters(value: anytype) Format_SI_Formatter(@TypeOf(value), "L") { return fmtSI(value, "L"); }
-pub inline fn fmtKelvins(value: anytype) Format_SI_Formatter(@TypeOf(value), "K") { return fmtSI(value, "K"); }
-pub inline fn fmtRadians(value: anytype) Format_SI_Formatter(@TypeOf(value), "rad") { return fmtSI(value, "rad"); }
-pub inline fn fmtHertz(value: anytype) Format_SI_Formatter(@TypeOf(value), "Hz") { return fmtSI(value, "Hz"); }
-pub inline fn fmtVolts(value: anytype) Format_SI_Formatter(@TypeOf(value), "V") { return fmtSI(value, "V"); }
-pub inline fn fmtAmps(value: anytype) Format_SI_Formatter(@TypeOf(value), "A") { return fmtSI(value, "A"); }
-pub inline fn fmtWatts(value: anytype) Format_SI_Formatter(@TypeOf(value), "W") { return fmtSI(value, "W"); }
-pub inline fn fmtJoules(value: anytype) Format_SI_Formatter(@TypeOf(value), "J") { return fmtSI(value, "J"); }
-pub inline fn fmtOhms(value: anytype) Format_SI_Formatter(@TypeOf(value), "\u{3A9}") { return fmtSI(value, "\u{3A9}"); }
-pub inline fn fmtFarads(value: anytype) Format_SI_Formatter(@TypeOf(value), "F") { return fmtSI(value, "F"); }
-pub inline fn fmtHenries(value: anytype) Format_SI_Formatter(@TypeOf(value), "H") { return fmtSI(value, "H"); }
+pub inline fn seconds(value: anytype) Format_SI_Formatter(@TypeOf(value), "s") { return si(value, "s"); }
+pub inline fn grams(value: anytype) Format_SI_Formatter(@TypeOf(value), "g") { return si(value, "g"); }
+pub inline fn meters(value: anytype) Format_SI_Formatter(@TypeOf(value), "m") { return si(value, "m"); }
+pub inline fn liters(value: anytype) Format_SI_Formatter(@TypeOf(value), "L") { return si(value, "L"); }
+pub inline fn kelvins(value: anytype) Format_SI_Formatter(@TypeOf(value), "K") { return si(value, "K"); }
+pub inline fn radians(value: anytype) Format_SI_Formatter(@TypeOf(value), "rad") { return si(value, "rad"); }
+pub inline fn hertz(value: anytype) Format_SI_Formatter(@TypeOf(value), "Hz") { return si(value, "Hz"); }
+pub inline fn volts(value: anytype) Format_SI_Formatter(@TypeOf(value), "V") { return si(value, "V"); }
+pub inline fn amps(value: anytype) Format_SI_Formatter(@TypeOf(value), "A") { return si(value, "A"); }
+pub inline fn watts(value: anytype) Format_SI_Formatter(@TypeOf(value), "W") { return si(value, "W"); }
+pub inline fn joules(value: anytype) Format_SI_Formatter(@TypeOf(value), "J") { return si(value, "J"); }
+pub inline fn ohms(value: anytype) Format_SI_Formatter(@TypeOf(value), "\u{3A9}") { return si(value, "\u{3A9}"); }
+pub inline fn farads(value: anytype) Format_SI_Formatter(@TypeOf(value), "F") { return si(value, "F"); }
+pub inline fn henries(value: anytype) Format_SI_Formatter(@TypeOf(value), "H") { return si(value, "H"); }
 
-test fmtSI {
+test si {
     var buf: [24]u8 = undefined;
     inline for (.{
         .{ .u = "m", .fmt = "{d}", .s = "0 m", .b = 0 },
@@ -438,7 +438,7 @@ test fmtSI {
         .{ .u = "m", .fmt = "{d:=<10}", .s = "1 m=======", .b = 1 },
         .{ .u = "m", .fmt = "{d:^10}",  .s = "  102 km  ", .b = 102400 },
     }) |tc| {
-        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{ fmtSI(tc.b, tc.u) });
+        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{ si(tc.b, tc.u) });
         try std.testing.expectEqualStrings(tc.s, slice);
     }
 
@@ -455,7 +455,7 @@ test fmtSI {
         .{ .u = "m", .fmt = "{d:=<10}", .s = "1 m=======", .b = 1 },
         .{ .u = "m", .fmt = "{d:^10}",  .s = " 102.4 km ", .b = 102400 },
     }) |tc| {
-        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{ fmtSI(@as(f64, tc.b), tc.u) });
+        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{ si(@as(f64, tc.b), tc.u) });
         try std.testing.expectEqualStrings(tc.s, slice);
     }
 }
