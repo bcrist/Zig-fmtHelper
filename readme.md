@@ -27,3 +27,25 @@ pub fn build(b: *std.Build) void {
     //...
 }
 ```
+
+## Example Usage
+```zig
+pub fn print_stats(some_number_of_bytes: usize, some_number_of_nanoseconds: usize) !void {
+    std.io.getStdOut().writer().print(
+        \\   some number of bytes: {}
+        \\   some duration: {}
+        \\
+    , .{
+        fmt.bytes(some_number_of_bytes),
+        fmt.si.ns(some_number_of_nanoseconds),
+    });
+}
+
+const fmt = @import("fmt");
+const std = @import("std");
+```
+Possible output:
+```
+   some number of bytes: 3 KB
+   some duration: 47 ms
+```
