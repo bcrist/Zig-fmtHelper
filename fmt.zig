@@ -43,12 +43,12 @@ fn format_bytes(data: Format_Bytes_Data, comptime fmt: []const u8, options: std.
     const float_buf = buf[0 .. buf.len - 4];
     var out: []const u8 = buf[0..0];
 
-    if (fmt.len == 0 or comptime std.mem.eql(u8, fmt, "e")) {
-        out = std.fmt.formatFloat(float_buf, value, .{ .mode = .scientific, .precision = options.precision }) catch |err| switch (err) {
+    if (fmt.len == 0 or comptime std.mem.eql(u8, fmt, "d")) {
+        out = std.fmt.formatFloat(float_buf, value, .{ .mode = .decimal, .precision = options.precision }) catch |err| switch (err) {
             error.BufferTooSmall => "(float)",
         };
-    } else if (comptime std.mem.eql(u8, fmt, "d")) {
-        out = std.fmt.formatFloat(float_buf, value, .{ .mode = .decimal, .precision = options.precision }) catch |err| switch (err) {
+    } else if (comptime std.mem.eql(u8, fmt, "e")) {
+        out = std.fmt.formatFloat(float_buf, value, .{ .mode = .scientific, .precision = options.precision }) catch |err| switch (err) {
             error.BufferTooSmall => "(float)",
         };
     } else if (comptime std.mem.eql(u8, fmt, "x")) {
@@ -99,6 +99,8 @@ test bytes {
         .{ .fmt = "{d:.1}", .s = "1.0 GB", .b = 1024 * 1024 * 1024 - 1 },
         .{ .fmt = "{d:.1}", .s = "1.0 TB", .b = 1024 * 1024 * 1024 * 1024 - 1 },
         .{ .fmt = "{d:.3}", .s = "1023.023 KB", .b = 1024 * 1024 - 1000 },
+        .{ .fmt = "{:.3}", .s = "1023.023 KB", .b = 1024 * 1024 - 1000 },
+        .{ .fmt = "{e:.3}", .s = "1.023e3 KB", .b = 1024 * 1024 - 1000 },
         .{ .fmt = "{d:.3}", .s = "1023.046 MB", .b = 1024 * 1024 * 1024 - 1000 * 1000 },
         .{ .fmt = "{d:.3}", .s = "1023.069 GB", .b = 1024 * 1024 * 1024 * 1024 - 1000 * 1000 * 1000 },
         .{ .fmt = "{d}", .s = "0.9999990463256836 MB", .b = 1024 * 1024 - 1 },
