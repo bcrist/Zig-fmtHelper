@@ -72,87 +72,97 @@ pub inline fn uh(val: anytype) Formatter(@TypeOf(val), "H", .micro) { return val
 pub inline fn nh(val: anytype) Formatter(@TypeOf(val), "H", .nano) { return value_scaled(val, .nano, "H"); }
 
 
-const Format_SI_Float_Data = struct {
+const Format_SI_Float = struct {
     value: f64,
     limit: f64 = 999.5,
     unit: []const u8,
     use_utf8: bool = true,
+
+    pub fn format(self: Format_SI_Float, writer: *std.Io.Writer) !void {
+        try self.formatNumber(writer, .{});
+    }
+
+    pub fn formatNumber(self: Format_SI_Float, writer: *std.Io.Writer, options: std.fmt.Number) !void {
+        if (self.unit.len > 32) return error.WriteFailed;
+
+        const min_exponent = -10;
+        const max_exponent = 10;
+        var val = @abs(self.value);
+        var exponent: i16 = 0;
+        while (exponent < max_exponent and val >= self.limit) {
+            exponent += 1;
+            val /= 1000;
+        }
+        const limit = self.limit / 1000;
+        while (exponent > min_exponent and val < limit and val != 0) {
+            exponent -= 1;
+            val *= 1000;
+        }
+
+        if (self.value < 0) {
+            val = -val;
+        }
+
+        const suffix: []const u8 = switch (exponent) {
+            -10 => " q",
+            -9 => " r",
+            -8 => " y",
+            -7 => " z",
+            -6 => " a",
+            -5 => " f",
+            -4 => " p",
+            -3 => " n",
+            -2 => if (self.use_utf8) " \u{b5}" else " u",
+            -1 => " m",
+            0 => " ",
+            1 => " k",
+            2 => " M",
+            3 => " G",
+            4 => " T",
+            5 => " P",
+            6 => " E",
+            7 => " Z",
+            8 => " Y",
+            9 => " R",
+            10 => " Q",
+            else => unreachable,
+        };
+
+        var buf: [std.fmt.float.bufferSize(.decimal, f64) + 35]u8 = undefined;
+        const float_buf = buf[0 .. buf.len - 35];
+        var out: []const u8 = buf[0..0];
+
+        switch (options.mode) {
+            .decimal, .scientific => {
+                out = std.fmt.float.render(float_buf, val, .{
+                    .mode = switch (options.mode) {
+                        .decimal => .decimal,
+                        .scientific => .scientific,
+                        else => unreachable,
+                    },
+                    .precision = options.precision,
+                }) catch |err| switch (err) {
+                    error.BufferTooSmall => result: {
+                        @memcpy((&buf).ptr, "(float)");
+                        break :result buf[0.."(float)".len];
+                    },
+                };
+            },
+            else => {
+                var buf_writer = std.Io.Writer.fixed(float_buf);
+                buf_writer.printFloatHexOptions(val, options) catch unreachable;
+                out = buf_writer.buffered();
+            },
+        }
+
+        @memcpy(buf[out.len..][0..suffix.len], suffix);
+        @memcpy(buf[out.len + suffix.len ..][0..self.unit.len], self.unit);
+        out = buf[0 .. out.len + suffix.len + self.unit.len];
+
+        return writer.alignBuffer(out, options.width orelse out.len, options.alignment, options.fill);
+    }
 };
 
-fn format_si_float(data: Format_SI_Float_Data, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
-    if (data.unit.len > 32) return error.InvalidUnit;
-
-    const min_exponent = -10;
-    const max_exponent = 10;
-    var val = @abs(data.value);
-    var exponent: i16 = 0;
-    while (exponent < max_exponent and val >= data.limit) {
-        exponent += 1;
-        val /= 1000;
-    }
-    const limit = data.limit / 1000;
-    while (exponent > min_exponent and val < limit and val != 0) {
-        exponent -= 1;
-        val *= 1000;
-    }
-
-    if (data.value < 0) {
-        val = -val;
-    }
-
-    const suffix: []const u8 = switch (exponent) {
-        -10 => " q",
-        -9 => " r",
-        -8 => " y",
-        -7 => " z",
-        -6 => " a",
-        -5 => " f",
-        -4 => " p",
-        -3 => " n",
-        -2 => if (data.use_utf8) " \u{b5}" else " u",
-        -1 => " m",
-        0 => " ",
-        1 => " k",
-        2 => " M",
-        3 => " G",
-        4 => " T",
-        5 => " P",
-        6 => " E",
-        7 => " Z",
-        8 => " Y",
-        9 => " R",
-        10 => " Q",
-        else => unreachable,
-    };
-
-    var buf: [std.fmt.format_float.bufferSize(.decimal, f64) + 35]u8 = undefined;
-    const float_buf = buf[0 .. buf.len - 35];
-    var out: []const u8 = buf[0..0];
-
-    if (fmt.len == 0 or comptime std.mem.eql(u8, fmt, "e")) {
-        out = std.fmt.formatFloat(float_buf, val, .{ .mode = .scientific, .precision = options.precision }) catch |err| switch (err) {
-            error.BufferTooSmall => "(float)",
-        };
-    } else if (comptime std.mem.eql(u8, fmt, "d")) {
-        out = std.fmt.formatFloat(float_buf, val, .{ .mode = .decimal, .precision = options.precision }) catch |err| switch (err) {
-            error.BufferTooSmall => "(float)",
-        };
-    } else if (comptime std.mem.eql(u8, fmt, "x")) {
-        var buf_stream = std.io.fixedBufferStream(float_buf);
-        std.fmt.formatFloatHexadecimal(val, options, buf_stream.writer()) catch |err| switch (err) {
-            error.NoSpaceLeft => unreachable,
-        };
-        out = buf_stream.getWritten();
-    } else {
-        std.fmt.invalidFmtError(fmt, val);
-    }
-
-    @memcpy(buf[out.len..][0..suffix.len], suffix);
-    @memcpy(buf[out.len + suffix.len ..][0..data.unit.len], data.unit);
-    out = buf[0 .. out.len + suffix.len + data.unit.len];
-
-    return std.fmt.formatBuf(out, options, writer);
-}
 
 pub const Format_SI_Int_Options = struct {
     unit: []const u8,
@@ -160,27 +170,26 @@ pub const Format_SI_Int_Options = struct {
     use_utf8: bool = true,
     limit: comptime_int = 1000,
 };
-
 fn Format_SI_Int(comptime T: type, comptime si_options: Format_SI_Int_Options) type {
     return struct {
         value: T,
 
-        pub const Formatter = std.fmt.Formatter(format);
+        pub fn format(self: @This(), writer: *std.Io.Writer) !void {
+            try self.formatNumber(writer, .{});
+        }
 
-        pub fn format(data: @This(), comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
-            _ = fmt;
-
+        pub fn formatNumber(self: @This(), writer: *std.Io.Writer, options: std.fmt.Number) !void {
             const min_exponent = -30;
             const max_exponent = 30;
 
             const precision = options.precision orelse 0;
-            if (precision > 32) return error.InvalidPrecision;
+            if (precision > 32) return error.WriteFailed;
 
             var precision_buf: [32]u8 = .{ '0' } ** 32;
             var precision_slice = precision_buf[0..precision];
 
             var exponent = si_options.exponent_offset;
-            var val = @abs(data.value);
+            var val = @abs(self.value);
             if (val == 0) {
                 exponent = 0;
             } else {
@@ -243,14 +252,13 @@ fn Format_SI_Int(comptime T: type, comptime si_options: Format_SI_Int_Options) t
             };
 
             var buf: [@bitSizeOf(T) / 3 + 36 + si_options.unit.len]u8 = undefined;
-            var buf_stream = std.io.fixedBufferStream(&buf);
-            var buf_writer = buf_stream.writer();
+            var buf_writer = std.Io.Writer.fixed(&buf);
 
-            if (data.value < 0) {
+            if (self.value < 0) {
                 buf_writer.writeByte('-') catch unreachable;
             }
 
-            std.fmt.formatInt(val, 10, .lower, .{}, buf_writer) catch unreachable;
+            buf_writer.printInt(val, 10, .lower, .{}) catch unreachable;
 
             if (options.precision) |_| {
                 buf_writer.writeByte('.') catch unreachable;
@@ -260,7 +268,7 @@ fn Format_SI_Int(comptime T: type, comptime si_options: Format_SI_Int_Options) t
             buf_writer.writeAll(suffix) catch unreachable;
             buf_writer.writeAll(si_options.unit) catch unreachable;
 
-            return std.fmt.formatBuf(buf_stream.getWritten(), options, writer);
+            return writer.alignBuffer(buf_writer.buffered(), options.width orelse buf_writer.buffered().len, options.alignment, options.fill);
         }
     };
 }
@@ -295,9 +303,9 @@ pub const Scaling = enum (i16) {
 
 fn Formatter(comptime T: type, comptime unit: []const u8, comptime scaling: Scaling) type {
     return switch (@typeInfo(T)) {
-        .float, .comptime_float => std.fmt.Formatter(format_si_float),
-        .int => Format_SI_Int(T, .{ .unit = unit, .exponent_offset = @intFromEnum(scaling) }).Formatter,
-        .comptime_int => Format_SI_Int(i64, .{ .unit = unit, .exponent_offset = @intFromEnum(scaling) }).Formatter,
+        .float, .comptime_float => Format_SI_Float,
+        .int => Format_SI_Int(T, .{ .unit = unit, .exponent_offset = @intFromEnum(scaling) }),
+        .comptime_int => Format_SI_Int(i64, .{ .unit = unit, .exponent_offset = @intFromEnum(scaling) }),
         else => @compileError("Expected float or int value"),
     };
 }
@@ -305,16 +313,13 @@ fn Formatter(comptime T: type, comptime unit: []const u8, comptime scaling: Scal
 pub fn value(val: anytype, comptime unit: []const u8) Formatter(@TypeOf(val), unit, .none) {
     switch (@typeInfo(@TypeOf(val))) {
         .float, .comptime_float => {
-            const data = Format_SI_Float_Data{ .value = val, .unit = unit };
-            return .{ .data = data };
+            return .{ .value = val, .unit = unit };
         },
         .int => {
-            const data = Format_SI_Int(@TypeOf(val), .{ .unit = unit, .exponent_offset = 0 }) { .value = val };
-            return .{ .data = data };
+            return .{ .value = val };
         },
         .comptime_int => {
-            const data = Format_SI_Int(i64, .{ .unit = unit, .exponent_offset = 0 }) { .value = @intCast(val) };
-            return .{ .data = data };
+            return .{ .value = @intCast(val) };
         },
         else => @compileError("Expected float or int value"),
     }
@@ -323,22 +328,17 @@ pub fn value(val: anytype, comptime unit: []const u8) Formatter(@TypeOf(val), un
 pub fn value_scaled(val: anytype, comptime scaling: Scaling, comptime unit: []const u8) Formatter(@TypeOf(val), unit, scaling) {
     switch (@typeInfo(@TypeOf(val))) {
         .float, .comptime_float => {
-            const data = Format_SI_Float_Data{ .value = val * comptime std.math.pow(f64, 10, @intFromEnum(scaling)), .unit = unit };
-            return .{ .data = data };
+            return .{ .value = val * comptime std.math.pow(f64, 10, @intFromEnum(scaling)), .unit = unit };
         },
         .int => {
-            const data = Format_SI_Int(@TypeOf(val), .{ .unit = unit, .exponent_offset = @intFromEnum(scaling) }) { .value = val };
-            return .{ .data = data };
+            return .{ .value = val };
         },
         .comptime_int => {
-            const data = Format_SI_Int(i64, .{ .unit = unit, .exponent_offset = @intFromEnum(scaling) }) { .value = @intCast(val) };
-            return .{ .data = data };
+            return .{ .value = @intCast(val) };
         },
         else => @compileError("Expected float or int value"),
     }
 }
-
-
 
 test value {
     var buf: [24]u8 = undefined;

@@ -1,86 +1,89 @@
-const Format_Bytes_Data = struct {
+const Format_Bytes = struct {
     bytes: u64,
     negative: bool = false,
     use_iec_suffixes: bool = false,
     limit: f64 = 1023.5,
+
+    pub fn format(self: Format_Bytes, writer: *std.Io.Writer) !void {
+        try self.formatNumber(writer, .{});
+    }
+
+    pub fn formatNumber(self: Format_Bytes, writer: *std.Io.Writer, options: std.fmt.Number) !void {
+        const max_exponent = 6;
+        const limit: f64 = self.limit;
+        var value: f64 = @floatFromInt(self.bytes);
+        var exponent: u16 = 0;
+        while (exponent < max_exponent and value >= limit) {
+            exponent += 1;
+            value /= 1024;
+        }
+
+        if (self.negative) {
+            value = -value;
+        }
+
+        const suffix = if (self.use_iec_suffixes) switch (exponent) {
+            0 => " B",
+            1 => " KiB",
+            2 => " MiB",
+            3 => " GiB",
+            4 => " TiB",
+            5 => " PiB",
+            6 => " EiB",
+            else => unreachable,
+        } else switch (exponent) {
+            0 => " B",
+            1 => " KB",
+            2 => " MB",
+            3 => " GB",
+            4 => " TB",
+            5 => " PB",
+            6 => " EB",
+            else => unreachable,
+        };
+
+        var buf: [std.fmt.float.bufferSize(.decimal, f64) + 4]u8 = undefined;
+        const float_buf = buf[0 .. buf.len - 4];
+        var out: []const u8 = buf[0..0];
+        
+        switch (options.mode) {
+            .decimal, .scientific => {
+                out = std.fmt.float.render(float_buf, value, .{
+                    .mode = switch (options.mode) {
+                        .decimal => .decimal,
+                        .scientific => .scientific,
+                        else => unreachable,
+                    },
+                    .precision = options.precision,
+                }) catch |err| switch (err) {
+                    error.BufferTooSmall => result: {
+                        @memcpy((&buf).ptr, "(float)");
+                        break :result buf[0.."(float)".len];
+                    },
+                };
+            },
+            else => {
+                var buf_writer = std.Io.Writer.fixed(float_buf);
+                buf_writer.printFloatHexOptions(value, options) catch unreachable;
+                out = buf_writer.buffered();
+            },
+        }
+
+        @memcpy(buf[out.len..][0..suffix.len], suffix);
+        out = buf[0 .. out.len + suffix.len];
+
+        return writer.alignBuffer(out, options.width orelse out.len, options.alignment, options.fill);
+    }
 };
 
-fn format_bytes(data: Format_Bytes_Data, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
-    const max_exponent = 6;
-    const limit: f64 = data.limit;
-    var value: f64 = @floatFromInt(data.bytes);
-    var exponent: u16 = 0;
-    while (exponent < max_exponent and value >= limit) {
-        exponent += 1;
-        value /= 1024;
-    }
-
-    if (data.negative) {
-        value = -value;
-    }
-
-    const suffix = if (data.use_iec_suffixes) switch (exponent) {
-        0 => " B",
-        1 => " KiB",
-        2 => " MiB",
-        3 => " GiB",
-        4 => " TiB",
-        5 => " PiB",
-        6 => " EiB",
-        else => unreachable,
-    } else switch (exponent) {
-        0 => " B",
-        1 => " KB",
-        2 => " MB",
-        3 => " GB",
-        4 => " TB",
-        5 => " PB",
-        6 => " EB",
-        else => unreachable,
-    };
-
-    var buf: [std.fmt.format_float.bufferSize(.decimal, f64) + 4]u8 = undefined;
-    const float_buf = buf[0 .. buf.len - 4];
-    var out: []const u8 = buf[0..0];
-
-    if (fmt.len == 0 or comptime std.mem.eql(u8, fmt, "d")) {
-        out = std.fmt.formatFloat(float_buf, value, .{ .mode = .decimal, .precision = options.precision }) catch |err| switch (err) {
-            error.BufferTooSmall => "(float)",
-        };
-    } else if (comptime std.mem.eql(u8, fmt, "e")) {
-        out = std.fmt.formatFloat(float_buf, value, .{ .mode = .scientific, .precision = options.precision }) catch |err| switch (err) {
-            error.BufferTooSmall => "(float)",
-        };
-    } else if (comptime std.mem.eql(u8, fmt, "x")) {
-        var buf_stream = std.io.fixedBufferStream(float_buf);
-        std.fmt.formatFloatHexadecimal(value, options, buf_stream.writer()) catch |err| switch (err) {
-            error.NoSpaceLeft => unreachable,
-        };
-        out = buf_stream.getWritten();
-    } else {
-        std.fmt.invalidFmtError(fmt, value);
-    }
-
-    @memcpy(buf[out.len..][0..suffix.len], suffix);
-    out = buf[0 .. out.len + suffix.len];
-
-    return std.fmt.formatBuf(out, options, writer);
+pub fn bytes(n: u64) Format_Bytes {
+    return .{ .bytes = n };
 }
 
-pub fn bytes(n: u64) std.fmt.Formatter(format_bytes) {
+pub fn bytes_signed(n: i64) Format_Bytes {
     return .{
-        .data = .{
-            .bytes = n,
-        },
-    };
-}
-
-pub fn bytes_signed(n: i64) std.fmt.Formatter(format_bytes) {
-    return .{
-        .data = .{
-            .bytes = @abs(n),
-            .negative = n < 0,
-        },
+        .bytes = @abs(n),
+        .negative = n < 0,
     };
 }
 
@@ -99,7 +102,6 @@ test bytes {
         .{ .fmt = "{d:.1}", .s = "1.0 GB", .b = 1024 * 1024 * 1024 - 1 },
         .{ .fmt = "{d:.1}", .s = "1.0 TB", .b = 1024 * 1024 * 1024 * 1024 - 1 },
         .{ .fmt = "{d:.3}", .s = "1023.023 KB", .b = 1024 * 1024 - 1000 },
-        .{ .fmt = "{:.3}", .s = "1023.023 KB", .b = 1024 * 1024 - 1000 },
         .{ .fmt = "{e:.3}", .s = "1.023e3 KB", .b = 1024 * 1024 - 1000 },
         .{ .fmt = "{d:.3}", .s = "1023.046 MB", .b = 1024 * 1024 * 1024 - 1000 * 1000 },
         .{ .fmt = "{d:.3}", .s = "1023.069 GB", .b = 1024 * 1024 * 1024 * 1024 - 1000 * 1000 * 1000 },
@@ -116,66 +118,65 @@ test bytes {
     }
 }
 
-
-
-const Format_Bytes_Floor_Data = struct {
+const Format_Bytes_Floor = struct {
     bytes: u64,
     negative: bool = false,
     use_iec_suffixes: bool = false,
     limit: u64 = 1024,
-};
 
-fn format_bytes_floor(data: Format_Bytes_Floor_Data, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
-    _ = fmt;
-
-    const max_exponent = 6;
-    var value: u64 = data.bytes;
-    var exponent: u16 = 0;
-    while (exponent < max_exponent and value >= data.limit) {
-        exponent += 1;
-        value = @divFloor(value, 1024);
+    pub fn format(self: Format_Bytes_Floor, writer: *std.Io.Writer) !void {
+        try self.formatNumber(writer, .{});
     }
 
-    const signed_value: i64 = @intCast(value);
-    const final_value = if (data.negative) -signed_value else signed_value;
+    pub fn formatNumber(self: Format_Bytes_Floor, writer: *std.Io.Writer, options: std.fmt.Number) !void {
+        const max_exponent = 6;
+        var value: u64 = self.bytes;
+        var exponent: u16 = 0;
+        while (exponent < max_exponent and value >= self.limit) {
+            exponent += 1;
+            value = @divFloor(value, 1024);
+        }
 
-    const suffix = if (data.use_iec_suffixes) switch (exponent) {
-        0 => " B",
-        1 => " KiB",
-        2 => " MiB",
-        3 => " GiB",
-        4 => " TiB",
-        5 => " PiB",
-        6 => " EiB",
-        else => unreachable,
-    } else switch (exponent) {
-        0 => " B",
-        1 => " KB",
-        2 => " MB",
-        3 => " GB",
-        4 => " TB",
-        5 => " PB",
-        6 => " EB",
-        else => unreachable,
-    };
+        const signed_value: i64 = @intCast(value);
+        const final_value = if (self.negative) -signed_value else signed_value;
 
-    var buf: [25]u8 = undefined;
-    const int_buf = buf[0 .. buf.len - 4];
+        const suffix = if (self.use_iec_suffixes) switch (exponent) {
+            0 => " B",
+            1 => " KiB",
+            2 => " MiB",
+            3 => " GiB",
+            4 => " TiB",
+            5 => " PiB",
+            6 => " EiB",
+            else => unreachable,
+        } else switch (exponent) {
+            0 => " B",
+            1 => " KB",
+            2 => " MB",
+            3 => " GB",
+            4 => " TB",
+            5 => " PB",
+            6 => " EB",
+            else => unreachable,
+        };
 
-    var buf_stream = std.io.fixedBufferStream(int_buf);
-    std.fmt.formatInt(final_value, 10, .lower, .{}, buf_stream.writer()) catch unreachable;
-    var out = buf_stream.getWritten();
+        var buf: [25]u8 = undefined;
+        const int_buf = buf[0 .. buf.len - 4];
 
-    @memcpy(buf[out.len..][0..suffix.len], suffix);
-    out = buf[0 .. out.len + suffix.len];
+        var buf_writer = std.Io.Writer.fixed(int_buf);
+        buf_writer.printInt(final_value, 10, .lower, .{}) catch unreachable;
+        var out = buf_writer.buffered();
 
-    return std.fmt.formatBuf(out, options, writer);
-}
+        @memcpy(buf[out.len..][0..suffix.len], suffix);
+        out = buf[0 .. out.len + suffix.len];
+
+        return writer.alignBuffer(out, options.width orelse out.len, options.alignment, options.fill);
+    }
+};
 
 /// Like fmtBytes, but always truncates towards zero instead of rounding, and avoids floating point computation entirely.
-pub fn bytes_floor(n: u64) std.fmt.Formatter(format_bytes_floor) {
-    const data = Format_Bytes_Floor_Data{ .bytes = n };
-    return .{ .data = data };
+pub fn bytes_floor(n: u64) Format_Bytes_Floor {
+    return .{ .bytes = n };
 }
 
 test bytes_floor {

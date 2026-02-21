@@ -4,9 +4,11 @@ pub fn build(b: *std.Build) void {
     });
 
     const tests = b.addTest(.{
-        .root_source_file = b.path("fmt.zig"),
-        .target = b.standardTargetOptions(.{}),
-        .optimize = b.standardOptimizeOption(.{}),
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("fmt.zig"),
+            .target = b.standardTargetOptions(.{}),
+            .optimize = b.standardOptimizeOption(.{}),
+        }),
     });
     const run_tests = b.addRunArtifact(tests);
 
