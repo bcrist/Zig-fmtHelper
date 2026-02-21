@@ -1,12 +1,12 @@
 pub fn build(b: *std.Build) void {
-    _ = b.addModule("fmt", .{
-        .root_source_file = b.path("fmt.zig"),
-    });
-
-    const tests = b.addTest(.{
+    const fmt = b.addModule("fmt", .{
         .root_source_file = b.path("fmt.zig"),
         .target = b.standardTargetOptions(.{}),
         .optimize = b.standardOptimizeOption(.{}),
+    });
+
+    const tests = b.addTest(.{
+        .root_module = fmt,
     });
     const run_tests = b.addRunArtifact(tests);
 
