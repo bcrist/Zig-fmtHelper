@@ -1,6 +1,6 @@
-# Zig-fmtHelper
+# Zig Formatting Helpers
 
-Includes several std.fmt helpers, including:
+Includes several `std.Io.Writer.print()` helpers, including:
 
 - `bytes`: automatically format large byte values in KB, MB, GB, TB, etc.
 - `si`: automatically format large or small values using SI unit prefixes.
@@ -8,8 +8,8 @@ Includes several std.fmt helpers, including:
 ## Installation
 
 Add to your `build.zig.zon`:
-```
-$ zig fetch --save git+https://github.com/bcrist/Zig-fmtHelper
+```bash
+zig fetch --save git+https://codeberg.org/bcrist/zig-fmthelper
 ```
 
 Add to your `build.zig`:
@@ -31,7 +31,7 @@ pub fn build(b: *std.Build) void {
 ## Example Usage
 ```zig
 pub fn print_stats(some_number_of_bytes: usize, some_number_of_nanoseconds: usize) !void {
-    std.io.getStdOut().writer().print(
+    std.debug.print(
         \\   some number of bytes: {}
         \\   some duration: {}
         \\
