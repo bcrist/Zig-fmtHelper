@@ -8,10 +8,7 @@ pub fn build(b: *std.Build) void {
     const tests = b.addTest(.{
         .root_module = fmt,
     });
-    const run_tests = b.addRunArtifact(tests);
-
-    const test_step = b.step("test", "Run all tests");
-    test_step.dependOn(&run_tests.step);
+    b.step("test", "Run all tests").dependOn(&b.addRunArtifact(tests).step);
 }
 
 const std = @import("std");
