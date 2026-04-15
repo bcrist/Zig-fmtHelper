@@ -2,7 +2,7 @@
     .name = .fmt_helper,
     .fingerprint = 0x592da695fdf67dc8,
     .version = "0.2.0",
-    .minimum_zig_version = "0.16",
+    .minimum_zig_version = "0.16.0",
     .paths = .{
         "build.zig",
         "build.zig.zon",
