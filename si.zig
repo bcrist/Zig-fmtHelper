@@ -185,7 +185,7 @@ fn Format_SI_Int(comptime T: type, comptime si_options: Format_SI_Int_Options) t
             const precision = options.precision orelse 0;
             if (precision > 32) return error.WriteFailed;
 
-            var precision_buf: [32]u8 = .{ '0' } ** 32;
+            var precision_buf: [32]u8 = @splat('0');
             var precision_slice = precision_buf[0..precision];
 
             var exponent = si_options.exponent_offset;
