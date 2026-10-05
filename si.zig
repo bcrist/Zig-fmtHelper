@@ -1,76 +1,163 @@
 // Time (seconds)
 // N.B these are mainly useful for small durations; consider using std.fmt.fmtDuration for longer periods
-pub inline fn s(val: anytype) Formatter(@TypeOf(val), "s", .none) { return value(val, "s"); }
-pub inline fn ms(val: anytype) Formatter(@TypeOf(val), "s", .milli) { return value_scaled(val, .milli, "s"); }
-pub inline fn us(val: anytype) Formatter(@TypeOf(val), "s", .micro) { return value_scaled(val, .micro, "s"); }
-pub inline fn ns(val: anytype) Formatter(@TypeOf(val), "s", .nano) { return value_scaled(val, .nano, "s"); }
+pub inline fn s(val: anytype) Formatter(@TypeOf(val), "s", .none) {
+    return value(val, "s");
+}
+pub inline fn ms(val: anytype) Formatter(@TypeOf(val), "s", .milli) {
+    return value_scaled(val, .milli, "s");
+}
+pub inline fn us(val: anytype) Formatter(@TypeOf(val), "s", .micro) {
+    return value_scaled(val, .micro, "s");
+}
+pub inline fn ns(val: anytype) Formatter(@TypeOf(val), "s", .nano) {
+    return value_scaled(val, .nano, "s");
+}
 
 // Mass/weight (grams)
-pub inline fn g(val: anytype) Formatter(@TypeOf(val), "g", .none) { return value(val, "g"); }
-pub inline fn mg(val: anytype) Formatter(@TypeOf(val), "g", .milli) { return value_scaled(val, .milli, "g"); }
-pub inline fn kg(val: anytype) Formatter(@TypeOf(val), "g", .kilo) { return value_scaled(val, .kilo, "g"); }
+pub inline fn g(val: anytype) Formatter(@TypeOf(val), "g", .none) {
+    return value(val, "g");
+}
+pub inline fn mg(val: anytype) Formatter(@TypeOf(val), "g", .milli) {
+    return value_scaled(val, .milli, "g");
+}
+pub inline fn kg(val: anytype) Formatter(@TypeOf(val), "g", .kilo) {
+    return value_scaled(val, .kilo, "g");
+}
 
 // Spatial dimension/distance (meters)
-pub inline fn m(val: anytype) Formatter(@TypeOf(val), "m") { return value(val, "m"); }
-pub inline fn cm(val: anytype) Formatter(@TypeOf(val), "m", .centi) { return value_scaled(val, .centi, "m"); }
-pub inline fn mm(val: anytype) Formatter(@TypeOf(val), "m", .milli) { return value_scaled(val, .milli, "m"); }
-pub inline fn um(val: anytype) Formatter(@TypeOf(val), "m", .micro) { return value_scaled(val, .micro, "m"); }
-pub inline fn nm(val: anytype) Formatter(@TypeOf(val), "m", .nano) { return value_scaled(val, .nano, "m"); }
-pub inline fn km(val: anytype) Formatter(@TypeOf(val), "m", .kilo) { return value_scaled(val, .kilo, "m"); }
+pub inline fn m(val: anytype) Formatter(@TypeOf(val), "m") {
+    return value(val, "m");
+}
+pub inline fn cm(val: anytype) Formatter(@TypeOf(val), "m", .centi) {
+    return value_scaled(val, .centi, "m");
+}
+pub inline fn mm(val: anytype) Formatter(@TypeOf(val), "m", .milli) {
+    return value_scaled(val, .milli, "m");
+}
+pub inline fn um(val: anytype) Formatter(@TypeOf(val), "m", .micro) {
+    return value_scaled(val, .micro, "m");
+}
+pub inline fn nm(val: anytype) Formatter(@TypeOf(val), "m", .nano) {
+    return value_scaled(val, .nano, "m");
+}
+pub inline fn km(val: anytype) Formatter(@TypeOf(val), "m", .kilo) {
+    return value_scaled(val, .kilo, "m");
+}
 
 // Volume (Liters)
-pub inline fn l(val: anytype) Formatter(@TypeOf(val), "L", .none) { return value(val, "L"); }
-pub inline fn ml(val: anytype) Formatter(@TypeOf(val), "L", .milli) { return value_scaled(val, .milli, "L"); }
-pub inline fn ul(val: anytype) Formatter(@TypeOf(val), "L", .micro) { return value_scaled(val, .micro, "L"); }
+pub inline fn l(val: anytype) Formatter(@TypeOf(val), "L", .none) {
+    return value(val, "L");
+}
+pub inline fn ml(val: anytype) Formatter(@TypeOf(val), "L", .milli) {
+    return value_scaled(val, .milli, "L");
+}
+pub inline fn ul(val: anytype) Formatter(@TypeOf(val), "L", .micro) {
+    return value_scaled(val, .micro, "L");
+}
 
 // Temperature (Kelvin)
-pub inline fn k(val: anytype) Formatter(@TypeOf(val), "K", .none) { return value(val, "K"); }
-pub inline fn mk(val: anytype) Formatter(@TypeOf(val), "K", .milli) { return value_scaled(val, .milli, "K"); }
+pub inline fn k(val: anytype) Formatter(@TypeOf(val), "K", .none) {
+    return value(val, "K");
+}
+pub inline fn mk(val: anytype) Formatter(@TypeOf(val), "K", .milli) {
+    return value_scaled(val, .milli, "K");
+}
 
 // Angle (radians)
-pub inline fn rad(val: anytype) Formatter(@TypeOf(val), "rad", .none) { return value(val, "rad"); }
+pub inline fn rad(val: anytype) Formatter(@TypeOf(val), "rad", .none) {
+    return value(val, "rad");
+}
 
 // Frequency (Hertz)
-pub inline fn hz(val: anytype) Formatter(@TypeOf(val), "Hz", .none) { return value(val, "Hz"); }
-pub inline fn khz(val: anytype) Formatter(@TypeOf(val), "Hz", .kilo) { return value_scaled(val, .kilo, "Hz"); }
-pub inline fn mhz(val: anytype) Formatter(@TypeOf(val), "Hz", .mega) { return value_scaled(val, .mega, "Hz"); }
-pub inline fn ghz(val: anytype) Formatter(@TypeOf(val), "Hz", .giga) { return value_scaled(val, .giga, "Hz"); }
+pub inline fn hz(val: anytype) Formatter(@TypeOf(val), "Hz", .none) {
+    return value(val, "Hz");
+}
+pub inline fn khz(val: anytype) Formatter(@TypeOf(val), "Hz", .kilo) {
+    return value_scaled(val, .kilo, "Hz");
+}
+pub inline fn mhz(val: anytype) Formatter(@TypeOf(val), "Hz", .mega) {
+    return value_scaled(val, .mega, "Hz");
+}
+pub inline fn ghz(val: anytype) Formatter(@TypeOf(val), "Hz", .giga) {
+    return value_scaled(val, .giga, "Hz");
+}
 
 // Voltage (Volts)
-pub inline fn v(val: anytype) Formatter(@TypeOf(val), "V", .none) { return value(val, "V"); }
-pub inline fn mv(val: anytype) Formatter(@TypeOf(val), "V", .milli) { return value_scaled(val, .milli, "V"); }
-pub inline fn uv(val: anytype) Formatter(@TypeOf(val), "V", .micro) { return value_scaled(val, .micro, "V"); }
+pub inline fn v(val: anytype) Formatter(@TypeOf(val), "V", .none) {
+    return value(val, "V");
+}
+pub inline fn mv(val: anytype) Formatter(@TypeOf(val), "V", .milli) {
+    return value_scaled(val, .milli, "V");
+}
+pub inline fn uv(val: anytype) Formatter(@TypeOf(val), "V", .micro) {
+    return value_scaled(val, .micro, "V");
+}
 
 // Current (Amps)
-pub inline fn a(val: anytype) Formatter(@TypeOf(val), "A", .none) { return value(val, "A"); }
-pub inline fn ma(val: anytype) Formatter(@TypeOf(val), "A", .milli) { return value_scaled(val, .milli, "A"); }
-pub inline fn ua(val: anytype) Formatter(@TypeOf(val), "A", .micro) { return value_scaled(val, .micro, "A"); }
+pub inline fn a(val: anytype) Formatter(@TypeOf(val), "A", .none) {
+    return value(val, "A");
+}
+pub inline fn ma(val: anytype) Formatter(@TypeOf(val), "A", .milli) {
+    return value_scaled(val, .milli, "A");
+}
+pub inline fn ua(val: anytype) Formatter(@TypeOf(val), "A", .micro) {
+    return value_scaled(val, .micro, "A");
+}
 
 // Power (Watts)
-pub inline fn w(val: anytype) Formatter(@TypeOf(val), "W", .none) { return value(val, "W"); }
-pub inline fn kw(val: anytype) Formatter(@TypeOf(val), "W", .kilo) { return value_scaled(val, .kilo, "W"); }
+pub inline fn w(val: anytype) Formatter(@TypeOf(val), "W", .none) {
+    return value(val, "W");
+}
+pub inline fn kw(val: anytype) Formatter(@TypeOf(val), "W", .kilo) {
+    return value_scaled(val, .kilo, "W");
+}
 
 // Energy (Joules)
-pub inline fn j(val: anytype) Formatter(@TypeOf(val), "J", .none) { return value(val, "J"); }
-pub inline fn kj(val: anytype) Formatter(@TypeOf(val), "J", .kilo) { return value_scaled(val, .kilo, "J"); }
+pub inline fn j(val: anytype) Formatter(@TypeOf(val), "J", .none) {
+    return value(val, "J");
+}
+pub inline fn kj(val: anytype) Formatter(@TypeOf(val), "J", .kilo) {
+    return value_scaled(val, .kilo, "J");
+}
 
 // Resistance/impedance (Ohms)
-pub inline fn ohms(val: anytype) Formatter(@TypeOf(val), "\u{3A9}", .none) { return value(val, "\u{3A9}"); }
-pub inline fn kohms(val: anytype) Formatter(@TypeOf(val), "\u{3A9}", .kilo) { return value_scaled(val, .kilo, "\u{3A9}"); }
-pub inline fn megaohms(val: anytype) Formatter(@TypeOf(val), "\u{3A9}", .mega) { return value_scaled(val, .mega, "\u{3A9}"); }
+pub inline fn ohms(val: anytype) Formatter(@TypeOf(val), "\u{3A9}", .none) {
+    return value(val, "\u{3A9}");
+}
+pub inline fn kohms(val: anytype) Formatter(@TypeOf(val), "\u{3A9}", .kilo) {
+    return value_scaled(val, .kilo, "\u{3A9}");
+}
+pub inline fn megaohms(val: anytype) Formatter(@TypeOf(val), "\u{3A9}", .mega) {
+    return value_scaled(val, .mega, "\u{3A9}");
+}
 
 // Capacitance (Farads)
-pub inline fn f(val: anytype) Formatter(@TypeOf(val), "F", .none) { return value(val, "F"); }
-pub inline fn uf(val: anytype) Formatter(@TypeOf(val), "F", .micro) { return value_scaled(val, .micro, "F"); }
-pub inline fn nf(val: anytype) Formatter(@TypeOf(val), "F", .nano) { return value_scaled(val, .nano, "F"); }
-pub inline fn pf(val: anytype) Formatter(@TypeOf(val), "F", .pico) { return value_scaled(val, .pico, "F"); }
+pub inline fn f(val: anytype) Formatter(@TypeOf(val), "F", .none) {
+    return value(val, "F");
+}
+pub inline fn uf(val: anytype) Formatter(@TypeOf(val), "F", .micro) {
+    return value_scaled(val, .micro, "F");
+}
+pub inline fn nf(val: anytype) Formatter(@TypeOf(val), "F", .nano) {
+    return value_scaled(val, .nano, "F");
+}
+pub inline fn pf(val: anytype) Formatter(@TypeOf(val), "F", .pico) {
+    return value_scaled(val, .pico, "F");
+}
 
 // Inductance (Henries)
-pub inline fn h(val: anytype) Formatter(@TypeOf(val), "H", .none) { return value(val, "H"); }
-pub inline fn mh(val: anytype) Formatter(@TypeOf(val), "H", .milli) { return value_scaled(val, .milli, "H"); }
-pub inline fn uh(val: anytype) Formatter(@TypeOf(val), "H", .micro) { return value_scaled(val, .micro, "H"); }
-pub inline fn nh(val: anytype) Formatter(@TypeOf(val), "H", .nano) { return value_scaled(val, .nano, "H"); }
-
+pub inline fn h(val: anytype) Formatter(@TypeOf(val), "H", .none) {
+    return value(val, "H");
+}
+pub inline fn mh(val: anytype) Formatter(@TypeOf(val), "H", .milli) {
+    return value_scaled(val, .milli, "H");
+}
+pub inline fn uh(val: anytype) Formatter(@TypeOf(val), "H", .micro) {
+    return value_scaled(val, .micro, "H");
+}
+pub inline fn nh(val: anytype) Formatter(@TypeOf(val), "H", .nano) {
+    return value_scaled(val, .nano, "H");
+}
 
 const Format_SI_Float = struct {
     value: f64,
@@ -163,7 +250,6 @@ const Format_SI_Float = struct {
     }
 };
 
-
 pub const Format_SI_Int_Options = struct {
     unit: []const u8,
     exponent_offset: i16 = 0,
@@ -246,7 +332,7 @@ fn Format_SI_Int(comptime T: type, comptime si_options: Format_SI_Int_Options) t
                 27 => " R",
                 30 => " Q",
                 else => {
-                    std.debug.panic("unsupported exponent: {}", .{ exponent });
+                    std.debug.panic("unsupported exponent: {}", .{exponent});
                     unreachable;
                 },
             };
@@ -273,7 +359,7 @@ fn Format_SI_Int(comptime T: type, comptime si_options: Format_SI_Int_Options) t
     };
 }
 
-pub const Scaling = enum (i16) {
+pub const Scaling = enum(i16) {
     quecto = -30,
     ronto = -27,
     yocto = -24,
@@ -304,8 +390,8 @@ pub const Scaling = enum (i16) {
 fn Formatter(comptime T: type, comptime unit: []const u8, comptime scaling: Scaling) type {
     return switch (@typeInfo(T)) {
         .float, .comptime_float => Format_SI_Float,
-        .int => Format_SI_Int(T, .{ .unit = unit, .exponent_offset = @intFromEnum(scaling) }),
-        .comptime_int => Format_SI_Int(i64, .{ .unit = unit, .exponent_offset = @intFromEnum(scaling) }),
+        .int => Format_SI_Int(T, .{ .unit = unit, .exponent_offset = @backingInt(scaling) }),
+        .comptime_int => Format_SI_Int(i64, .{ .unit = unit, .exponent_offset = @backingInt(scaling) }),
         else => @compileError("Expected float or int value"),
     };
 }
@@ -328,7 +414,7 @@ pub fn value(val: anytype, comptime unit: []const u8) Formatter(@TypeOf(val), un
 pub fn value_scaled(val: anytype, comptime scaling: Scaling, comptime unit: []const u8) Formatter(@TypeOf(val), unit, scaling) {
     switch (@typeInfo(@TypeOf(val))) {
         .float, .comptime_float => {
-            return .{ .value = val * comptime std.math.pow(f64, 10, @intFromEnum(scaling)), .unit = unit };
+            return .{ .value = val * comptime std.math.pow(f64, 10, @backingInt(scaling)), .unit = unit };
         },
         .int => {
             return .{ .value = val };
@@ -353,9 +439,9 @@ test value {
         .{ .u = "m", .fmt = "{d:.3}", .s = "1.023 Mm", .b = 1023456 },
         .{ .u = "m", .fmt = "{d:=>10}", .s = "=======0 m", .b = 0 },
         .{ .u = "m", .fmt = "{d:=<10}", .s = "1 m=======", .b = 1 },
-        .{ .u = "m", .fmt = "{d:^10}",  .s = "  102 km  ", .b = 102400 },
+        .{ .u = "m", .fmt = "{d:^10}", .s = "  102 km  ", .b = 102400 },
     }) |tc| {
-        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{ value(tc.b, tc.u) });
+        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{value(tc.b, tc.u)});
         try std.testing.expectEqualStrings(tc.s, slice);
     }
 
@@ -370,9 +456,9 @@ test value {
         .{ .u = "m", .fmt = "{d:.3}", .s = "1.023 Mm", .b = 1023456 },
         .{ .u = "m", .fmt = "{d:=>10}", .s = "=======0 m", .b = 0 },
         .{ .u = "m", .fmt = "{d:=<10}", .s = "1 m=======", .b = 1 },
-        .{ .u = "m", .fmt = "{d:^10}",  .s = " 102.4 km ", .b = 102400 },
+        .{ .u = "m", .fmt = "{d:^10}", .s = " 102.4 km ", .b = 102400 },
     }) |tc| {
-        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{ value(@as(f64, tc.b), tc.u) });
+        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{value(@as(f64, tc.b), tc.u)});
         try std.testing.expectEqualStrings(tc.s, slice);
     }
 }
@@ -390,9 +476,9 @@ test value_scaled {
         .{ .u = "m", .e = .centi, .fmt = "{d:.3}", .s = "102.345 km", .b = 10234567 },
         .{ .u = "m", .e = .centi, .fmt = "{d:=>10}", .s = "=======0 m", .b = 0 },
         .{ .u = "m", .e = .centi, .fmt = "{d:=<10.1}", .s = "10.0 mm===", .b = 1 },
-        .{ .u = "m", .e = .centi, .fmt = "{d:^10}",  .s = "  102 km  ", .b = 10240000 },
+        .{ .u = "m", .e = .centi, .fmt = "{d:^10}", .s = "  102 km  ", .b = 10240000 },
     }) |tc| {
-        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{ value_scaled(tc.b, tc.e, tc.u) });
+        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{value_scaled(tc.b, tc.e, tc.u)});
         try std.testing.expectEqualStrings(tc.s, slice);
     }
 
@@ -407,9 +493,9 @@ test value_scaled {
         .{ .u = "m", .e = .deka, .fmt = "{d:.3}", .s = "10.235 Mm", .b = 1023456 },
         .{ .u = "m", .e = .deka, .fmt = "{d:=>10}", .s = "=======0 m", .b = 0 },
         .{ .u = "m", .e = .deka, .fmt = "{d:=<10}", .s = "10 m======", .b = 1 },
-        .{ .u = "m", .e = .deka, .fmt = "{d:^10}",  .s = " 1.024 Mm ", .b = 102400 },
+        .{ .u = "m", .e = .deka, .fmt = "{d:^10}", .s = " 1.024 Mm ", .b = 102400 },
     }) |tc| {
-        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{ value_scaled(@as(f64, tc.b), tc.e, tc.u) });
+        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{value_scaled(@as(f64, tc.b), tc.e, tc.u)});
         try std.testing.expectEqualStrings(tc.s, slice);
     }
 }

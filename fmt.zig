@@ -45,7 +45,7 @@ const Format_Bytes = struct {
         var buf: [std.fmt.float.bufferSize(.decimal, f64) + 4]u8 = undefined;
         const float_buf = buf[0 .. buf.len - 4];
         var out: []const u8 = buf[0..0];
-        
+
         switch (options.mode) {
             .decimal, .scientific => {
                 out = std.fmt.float.render(float_buf, value, .{
@@ -111,9 +111,9 @@ test bytes {
         .{ .fmt = "{d}", .s = "16 EB", .b = std.math.maxInt(u64) },
         .{ .fmt = "{d:=>10}", .s = "=======0 B", .b = 0 },
         .{ .fmt = "{d:=<10}", .s = "1 B=======", .b = 1 },
-        .{ .fmt = "{d:^10}",  .s = "  100 KB  ", .b = 102400 },
+        .{ .fmt = "{d:^10}", .s = "  100 KB  ", .b = 102400 },
     }) |tc| {
-        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{ bytes(tc.b) });
+        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{bytes(tc.b)});
         try std.testing.expectEqualStrings(tc.s, slice);
     }
 }
@@ -199,9 +199,9 @@ test bytes_floor {
         .{ .fmt = "{d}", .s = "15 EB", .b = std.math.maxInt(u64) },
         .{ .fmt = "{d:=>10}", .s = "=======0 B", .b = 0 },
         .{ .fmt = "{d:=<10}", .s = "1 B=======", .b = 1 },
-        .{ .fmt = "{d:^10}",  .s = "  100 KB  ", .b = 102400 },
+        .{ .fmt = "{d:^10}", .s = "  100 KB  ", .b = 102400 },
     }) |tc| {
-        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{ bytes_floor(tc.b) });
+        const slice = try std.fmt.bufPrint(&buf, tc.fmt, .{bytes_floor(tc.b)});
         try std.testing.expectEqualStrings(tc.s, slice);
     }
 }
